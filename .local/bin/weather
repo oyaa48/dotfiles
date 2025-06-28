@@ -1,0 +1,45 @@
+#!/bin/bash
+
+API_KEY="${OPENWEATHER_API_KEY}"
+CITY_FILE="$HOME/.config/weather_cities"
+STATE_FILE="/tmp/current_city_index"
+
+# read city list into array
+mapfile -t CITIES < "$CITY_FILE"
+NUM_CITIES=${#CITIES[@]}
+
+# get current city index or start at 0
+if [ -f "$STATE_FILE" ]; then
+    CITY_INDEX=$(<"$STATE_FILE")
+else
+    CITY_INDEX=0
+fi
+
+# if script was called with click signal, advance city
+[ "$1" = "next" ] && CITY_INDEX=$(( (CITY_INDEX + 1) % NUM_CITIES ))
+echo "$CITY_INDEX" > "$STATE_FILE"
+
+CITY="${CITIES[$CITY_INDEX]}"
+
+# Fetch weather
+DATA=$(curl -sf "https://api.openweathermap.org/data/2.5/weather?q=$CITY&units=metric&appid=$API_KEY")
+if [ -z "$DATA" ]; then
+    echo "N/A"
+    exit
+fi
+
+TEMP=$(echo "$DATA" | jq '.main.temp' | cut -d. -f1)
+COND=$(echo "$DATA" | jq -r '.weather[0].main')
+
+# Choose emoji
+case "$COND" in
+  Clear) ICON="🌞" ;;                          # Smiling Sun (instead of ☀️)
+  Clouds) ICON="☁" ;;                         # Plain Cloud (no variation selector)
+  Rain|Drizzle) ICON="🌧" ;;                  # Cloud With Rain
+  Thunderstorm) ICON="⛈" ;;                  # Thunder Cloud
+  Snow) ICON="❄" ;;                           # Snowflake
+  Mist|Fog|Haze) ICON="🌫" ;;                 # Fog
+  *) ICON="❓" ;;                              # Fallback
+esac
+
+echo "$ICON ${TEMP}°C"
