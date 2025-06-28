@@ -1,0 +1,10 @@
+#!/bin/bash
+
+volume=$(pamixer --get-volume --allow-boost)
+muted=$(pamixer --get-mute --allow-boost)
+
+if [ "$muted" = "true" ]; then
+    echo "🔇 $volume%"
+else
+    echo "🔊 $volume%"
+fi

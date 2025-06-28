@@ -1,0 +1,21 @@
+#!/bin/sh
+
+iface=$(ip route | awk '/default/ {print $5}' | head -n1)
+file="/sys/class/net/$iface/statistics/rx_bytes"
+[ -f "$file" ] || exit
+
+prev=$(cat "$file")
+sleep 1
+curr=$(cat "$file")
+
+bps=$((curr - prev))
+
+if [ "$bps" -eq 0 ]; then
+    echo "0 MB/s"
+elif [ "$bps" -lt 1048576 ]; then  # Less than 1 MB
+    kbps=$(awk "BEGIN { printf \"%.0f\", $bps / 1024 }")
+    echo "$kbps KB/s"
+else
+    mbps=$(awk "BEGIN { printf \"%.2f\", $bps / 1048576 }")
+    echo "$mbps MB/s"
+fi

@@ -1,0 +1,13 @@
+#!/bin/bash
+
+# Screenshot dir
+DIR="$HOME/pics/ss"
+
+# Timestamped filename
+FILE="$DIR/$(date +'%Y-%m-%d_%H-%M-%S').png"
+
+# Capture, copy, save
+maim -s "$FILE" | xclip -selection clipboard -t image/png
+
+# Optional notify
+notify-send "📸 Snip saved and copied: $FILE"
