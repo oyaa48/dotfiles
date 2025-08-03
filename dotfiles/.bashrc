@@ -9,6 +9,7 @@ alias ls='ls --color=auto'
 alias grep='grep --color=auto'
 alias fastfetch='fastfetch -c neofetch.jsonc'
 alias vim='nvim'
+alias pacman='sudo pacman'
 PS1='[\u@\h \W]\$ '
 
 eval "$(starship init bash)"
